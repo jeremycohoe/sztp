@@ -1,30 +1,21 @@
-# DHCP Server Configuration file.
+# DHCP Server Configuration file. Rendered by scripts/render-dhcpd-conf.sh.
+# Do NOT hand-edit /data/dhcpd.conf — edit this template or set SZTP_URL.
 
 ddns-update-style interim;
 ignore client-updates;
 authoritative;
-allow booting;
-allow bootp;
 allow unknown-clients;
-option sztp-redirect-urls code 143  = text;
 
+# RFC 8572 §8.2 — SZTP-Redirect URL list option.
+option sztp-redirect-urls code 143 = string;
 
-# internal subnet for my DHCP Server
-subnet  ${NODE_IP_SUBNET} netmask  ${NODE_IP_NETMASK} {
-    range  ${NODE_IP_RANGE_MIN}  ${NODE_IP_RANGE_MAX};
+subnet ${NODE_IP_SUBNET} netmask ${NODE_IP_NETMASK} {
+    range ${NODE_IP_RANGE_MIN} ${NODE_IP_RANGE_MAX};
     default-lease-time 600;
     max-lease-time 7200;
 
-    #option 66
-    option tftp-server-name \"w.x.y.z\";
-
-    #option 67
-    option bootfile-name \"test.cfg\";
-
-    # option 143 (sZTP RFC-8572) or 136 for ipv6
-    option sztp-redirect-urls \"https://redirecter:8080/restconf/operations/ietf-sztp-bootstrap-server:get-bootstrapping-data\";
-
-    # IP of PXE Server
-    next-server ${NODE_IP_ADDRESS};
-    filename \"grubx64.efi\";
+    # Payload is a concatenation of 1..N records, each:
+    #   uint16 length (big-endian) || URI bytes (UTF-8).
+    # Generated from SZTP_URL by scripts/encode_sztp_url.py.
+    option sztp-redirect-urls ${OPTION_143_BINARY};
 }
