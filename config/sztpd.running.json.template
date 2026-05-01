@@ -58,7 +58,7 @@
           "name": "sbi-server-end-entity-key",
           "public-key-format": "ietf-crypto-types:subject-public-key-info-format",
           "public-key": "$SBI_PUB_KEY_B64",
-          "private-key-format": "ietf-crypto-types:ec-private-key-format",
+          "private-key-format": "ietf-crypto-types:rsaa-private-key-format",
           "cleartext-private-key": "$SBI_PRI_KEY_B64",
           "certificates": {
             "certificate": [

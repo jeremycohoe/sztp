@@ -30,12 +30,15 @@ cd /tmp/pki
 SBI_SAN="DNS:bootstrap,DNS:web,DNS:redirecter,DNS:localhost,IP:127.0.0.1,IP:10.127.127.3,IP:10.1.1.3"
 
 # ---- SBI: Root CA -----------------------------------------------------
-openssl ecparam -name prime256v1 -genkey -noout -out sbi-root.key.pem
+# Use RSA-2048 throughout for compatibility with the Cisco IOS-XE sZTP
+# client, whose libcurl/crypto stack rejected ECDSA (`SSL connect error`
+# on a 17.18.01 C9300 — see commit log).
+openssl genrsa -out sbi-root.key.pem 2048
 openssl req -x509 -new -nodes -key sbi-root.key.pem -sha256 -days 3650 \
     -subj "/CN=sztpd-sbi-root-ca" -out sbi-root.cert.pem
 
 # ---- SBI: Intermediate CA --------------------------------------------
-openssl ecparam -name prime256v1 -genkey -noout -out sbi-int.key.pem
+openssl genrsa -out sbi-int.key.pem 2048
 openssl req -new -key sbi-int.key.pem -subj "/CN=sztpd-sbi-intermediate-ca" \
     -out sbi-int.csr.pem
 cat > sbi-int.ext <<EOF
@@ -46,8 +49,11 @@ openssl x509 -req -in sbi-int.csr.pem -CA sbi-root.cert.pem -CAkey sbi-root.key.
     -CAcreateserial -days 1825 -sha256 -extfile sbi-int.ext -out sbi-int.cert.pem
 
 # ---- SBI: End-entity (server cert) -----------------------------------
-openssl ecparam -name prime256v1 -genkey -noout -out sbi-ee.key.pem
-# Persist as PKCS#8 so sztpd's `ietf-crypto-types:ec-private-key-format` works.
+openssl genrsa -out sbi-ee.key.pem 2048
+# Persist as PKCS#8 so sztpd's `ietf-crypto-types:rsa
+# ---- SBI: End-entity (server cert) -----------------------------------
+openssl genrsa -out sbi-ee.key.pem 2048
+# Persist as PKCS#8 so sztpd's `ietf-crypto-types:rsa-private-key-format` works.
 openssl pkcs8 -topk8 -nocrypt -in sbi-ee.key.pem -out sbi-ee.key.p8.pem
 openssl pkey -in sbi-ee.key.pem -pubout -outform DER -out sbi-ee.pub.der
 openssl pkey -in sbi-ee.key.pem -outform DER -out sbi-ee.key.der
