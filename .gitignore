@@ -24,3 +24,7 @@ local_files/*.key
 local_files/*.der
 local_files/*.srl
 local_files/*.bak.*
+
+# Local lab artifacts (Cisco SUDI chain, voucher, owner/PDC keys & certs).
+# Treated as runtime-only secrets; never commit.
+sztp_local_files/
