@@ -48,17 +48,37 @@ payload="${response%$'\n'__HTTP_CODE__*}"
 
 printf 'HTTP %s\n' "$http_code"
 
-if [[ "$http_code" != "200" ]]; then
-    printf 'FAIL: expected 200, got %s\n' "$http_code" >&2
-    printf 'body: %s\n' "$payload" | head -c 400 >&2
-    exit 1
-fi
-
-if printf '%s' "$payload" | grep -q 'conveyed-information'; then
-    printf 'OK: redirecter returned signed conveyed-information (%d bytes)\n' "${#payload}"
-    exit 0
-fi
-
-printf 'FAIL: 200 but body has no conveyed-information field\n' >&2
-printf '%s\n' "$payload" | head -c 400 >&2
-exit 1
+# Two acceptable outcomes from a non-device caller:
+#   200 + conveyed-information  → mTLS happens to be off (lab default)
+#   401 + access-denied         → mTLS enforced; only real SUDI is accepted
+# Both prove TLS handshakes, RESTCONF endpoint exists, sztpd is alive,
+# and sitecustomize hasn't crashed the worker.
+case "$http_code" in
+    200)
+        if printf '%s' "$payload" | grep -q 'conveyed-information'; then
+            printf 'OK: redirecter returned signed conveyed-information (%d bytes)\n' "${#payload}"
+            exit 0
+        fi
+        printf 'FAIL: 200 but body has no conveyed-information field\n' >&2
+        printf '%s\n' "$payload" | head -c 400 >&2
+        exit 1
+        ;;
+    401)
+        if printf '%s' "$payload" | grep -q 'access-denied'; then
+            printf 'OK: 401 access-denied (mTLS enforced; endpoint and auth are healthy)\n'
+            exit 0
+        fi
+        printf 'FAIL: 401 but unexpected error body\n' >&2
+        printf '%s\n' "$payload" | head -c 400 >&2
+        exit 1
+        ;;
+    404)
+        printf 'FAIL: 404 from redirecter — likely a doubled URL (SZTP_URL has a path?)\n' >&2
+        exit 1
+        ;;
+    *)
+        printf 'FAIL: unexpected HTTP %s\n' "$http_code" >&2
+        printf '%s\n' "$payload" | head -c 400 >&2
+        exit 1
+        ;;
+esac
