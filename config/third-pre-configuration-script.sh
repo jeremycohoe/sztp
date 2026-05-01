@@ -1,2 +1,4 @@
-#!/bin/bash
-echo "inside the third-pre-configuration-script..."
+
+#!/usr/bin/python3
+# SZTP Pre-Configuration Script (third)
+print("*** SZTP third pre-configuration script running ***")

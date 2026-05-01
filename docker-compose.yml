@@ -16,6 +16,7 @@ services:
       - server-certs:/certs
       - ./images:/media
       - ./config:/mnt
+      - ./local_files:/local_files:ro
       - ./scripts/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
     entrypoint: /usr/local/bin/docker-entrypoint.sh
     environment:
@@ -27,6 +28,13 @@ services:
       SZTPD_INIT_ADDR: 0.0.0.0
       SZTPD_OPI_MODE: "running"
       SZTPD_RETRY_ATTEMPTS: 30
+      PYTHONLOGLEVEL: DEBUG
+      PYTHONASYNCIODEBUG: "1"
+      SZTP_OWNERSHIP_VOUCHER_CMS: /local_files/FCW2126G05V.vcj
+      SZTP_OWNER_CERT_CMS: /local_files/owner_cert_chain.cms
+      CMS_OWNER_KEY: /local_files/owner-certificate.key
+      CMS_OWNER_CERT: /local_files/owner-certificate.crt
+      CMS_OWNER_CERT_CHAIN: /local_files/owner_cert_chain.pem
     ports:
       - 7080:7080
       - 9090:9090
@@ -43,6 +51,7 @@ services:
     volumes:
       - server-certs:/certs
       - ./config/sztpd.redirect.json.template:/mnt/sztpd.redirect.json.template
+      - ./local_files:/local_files:ro
       - ./scripts/docker-entrypoint.sh:/usr/local/bin/docker-entrypoint.sh
     entrypoint: /usr/local/bin/docker-entrypoint.sh
     environment:
@@ -53,9 +62,16 @@ services:
       SZTPD_ACCEPT_CONTRACT: "Yes"
       SZTPD_INIT_ADDR: 0.0.0.0
       BOOTSVR_PORT: 9090
-      BOOTSVR_ADDR: "bootstrap"
+      BOOTSVR_ADDR: "10.1.1.3"
       SZTPD_OPI_MODE: "redirect"
       SZTPD_RETRY_ATTEMPTS: 30
+      PYTHONLOGLEVEL: DEBUG
+      PYTHONASYNCIODEBUG: "1"
+      SZTP_OWNERSHIP_VOUCHER_CMS: /local_files/FCW2126G05V.vcj
+      SZTP_OWNER_CERT_CMS: /local_files/owner_cert_chain.cms
+      CMS_OWNER_KEY: /local_files/owner-certificate.key
+      CMS_OWNER_CERT: /local_files/owner-certificate.crt
+      CMS_OWNER_CERT_CHAIN: /local_files/owner_cert_chain.pem
     ports:
       - 8080:8080
     networks:
@@ -63,76 +79,41 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "curl --fail -H Accept:application/yang-data+json http://127.0.0.1:$$SZTPD_NBI_PORT/.well-known/host-meta || exit 1"]
 
+  # NOTE: In this lab the DHCP server is the upstream Cisco IOS router
+  # (10.1.1.3) which serves option 143. The bundled ISC dhcpd below is kept
+  # only for reference / fallback use and is gated behind the "dhcp" profile
+  # so it does NOT start with a plain `docker-compose up`.
+  # To start it explicitly:   docker-compose --profile dhcp up dhcp
   dhcp:
     image: docker.io/networkboot/dhcpd:1.3.0
+    profiles: ["dhcp"]
     environment:
-      NODE_IP_SUBNET: 10.127.127.0
+      NODE_IP_SUBNET: 10.1.1.0
       NODE_IP_NETMASK: 255.255.255.0
-      NODE_IP_RANGE_MIN: 10.127.127.100
-      NODE_IP_RANGE_MAX: 10.127.127.253
-      NODE_IP_ADDRESS: 10.127.127.3
+      NODE_IP_RANGE_MIN: 10.1.1.100
+      NODE_IP_RANGE_MAX: 10.1.1.253
+      NODE_IP_ADDRESS: 10.1.1.3
     volumes:
       - ./dhcp:/opt
     cap_add:
       - CAP_NET_BIND_SERVICE
       - CAP_NET_RAW
-    ports:
-      - 67:67/udp
-    networks:
-      - opi
-    command: sh -e -u -x -c 'touch /var/lib/dhcp/dhcpd.leases && eval "echo \"$$(cat /opt/dhcpd.conf.template)\"" > /etc/dhcp/dhcpd.conf && dhcpd -d'
-
-  # Cisco IOS-XE bring-up: RFC 8572 section 8.2 option 143 served over
-  # host networking so DHCPDISCOVERs from physical switches are received
-  # on the lab NIC. Only active when the "iosxe" profile is selected:
-  #   docker-compose --profile iosxe up -d
-  #
-  # Rendering: the dhcp-render init container encodes $SZTP_URL via
-  # scripts/encode_sztp_url.py and writes /data/dhcpd.conf from
-  # dhcp/dhcpd.conf.template. The dhcp-iosxe container then starts
-  # dhcpd against the rendered config.
-  dhcp-render:
-    image: docker.io/library/python:3.12-alpine
-    profiles: ["iosxe"]
-    volumes:
-      - ./dhcp:/data
-      - ./scripts/encode_sztp_url.py:/usr/local/bin/encode_sztp_url.py:ro
-      - ./scripts/render-dhcpd-conf.sh:/usr/local/bin/render-dhcpd-conf.sh:ro
-    environment:
-      SZTP_URL: ${SZTP_URL:-https://10.1.1.3:8080}
-      NODE_IP_SUBNET: ${NODE_IP_SUBNET:-10.1.1.0}
-      NODE_IP_NETMASK: ${NODE_IP_NETMASK:-255.255.255.0}
-      NODE_IP_RANGE_MIN: ${NODE_IP_RANGE_MIN:-10.1.1.100}
-      NODE_IP_RANGE_MAX: ${NODE_IP_RANGE_MAX:-10.1.1.253}
-    entrypoint: ["/bin/sh", "-c"]
-    command: ["apk add --no-cache gettext >/dev/null && /usr/local/bin/render-dhcpd-conf.sh"]
-
-  dhcp-iosxe:
-    image: docker.io/networkboot/dhcpd:1.3.0
-    profiles: ["iosxe"]
-    depends_on:
-      dhcp-render:
-        condition: service_completed_successfully
-    volumes:
-      - ./dhcp:/data
-    cap_add:
-      - CAP_NET_BIND_SERVICE
-      - CAP_NET_RAW
+    # Use host networking so DHCP broadcasts from physical devices (e.g. Cisco IOS XE)
+    # are received on ens19 (10.1.1.0/24). Incompatible with 'networks' and 'ports'.
     network_mode: host
+    # sed for env-var substitution (image is debian; no envsubst, and the
+    # original eval mangles multi-line comments containing parens/quotes).
+    command: ["sh","-e","-u","-x","-c","touch /var/lib/dhcp/dhcpd.leases && sed -e \"s|[$][{]NODE_IP_SUBNET[}]|$$NODE_IP_SUBNET|g\" -e \"s|[$][{]NODE_IP_NETMASK[}]|$$NODE_IP_NETMASK|g\" -e \"s|[$][{]NODE_IP_RANGE_MIN[}]|$$NODE_IP_RANGE_MIN|g\" -e \"s|[$][{]NODE_IP_RANGE_MAX[}]|$$NODE_IP_RANGE_MAX|g\" -e \"s|[$][{]NODE_IP_ADDRESS[}]|$$NODE_IP_ADDRESS|g\" /opt/dhcpd.conf.template > /etc/dhcp/dhcpd.conf && cat /etc/dhcp/dhcpd.conf && exec dhcpd -d -cf /etc/dhcp/dhcpd.conf ens19"]
 
   setup-cert:
-    # Offline PKI bootstrap. Replaces the prior step that fetched
-    # https://watsen.net/support/sztpd-simulator-0.0.11.tgz (now 404).
-    # Uses sztp_local_files/cisco_sudi_ta_chain.pem as the device-identity
-    # trust anchor so a real Cisco C9xxx SUDI client cert is accepted.
     image: docker.io/alpine/openssl:3.3.1
     volumes:
       - server-certs:/certs/server
       - client-certs:/certs/client
-      - ./sztp_local_files:/local_files:ro
-      - ./scripts/setup-cert-offline.sh:/usr/local/bin/setup-cert-offline.sh:ro
+      - ./scripts/setup-cert.sh:/setup-cert.sh
     user: "0"
-    entrypoint: ["/bin/ash", "/usr/local/bin/setup-cert-offline.sh"]
+    entrypoint: /bin/ash
+    command: /setup-cert.sh
 
   web:
     image: docker.io/library/httpd:2.4.57-alpine3.17

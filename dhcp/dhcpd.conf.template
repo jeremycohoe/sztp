@@ -1,21 +1,23 @@
-# DHCP Server Configuration file. Rendered by scripts/render-dhcpd-conf.sh.
-# Do NOT hand-edit /data/dhcpd.conf — edit this template or set SZTP_URL.
+# DHCP Server Configuration file.
 
 ddns-update-style interim;
 ignore client-updates;
 authoritative;
 allow unknown-clients;
+option sztp-redirect-urls code 143  = text;
 
-# RFC 8572 §8.2 — SZTP-Redirect URL list option.
-option sztp-redirect-urls code 143 = string;
 
-subnet ${NODE_IP_SUBNET} netmask ${NODE_IP_NETMASK} {
-    range ${NODE_IP_RANGE_MIN} ${NODE_IP_RANGE_MAX};
+# internal subnet for my DHCP Server
+subnet  ${NODE_IP_SUBNET} netmask  ${NODE_IP_NETMASK} {
+    range  ${NODE_IP_RANGE_MIN}  ${NODE_IP_RANGE_MAX};
     default-lease-time 600;
     max-lease-time 7200;
 
-    # Payload is a concatenation of 1..N records, each:
-    #   uint16 length (big-endian) || URI bytes (UTF-8).
-    # Generated from SZTP_URL by scripts/encode_sztp_url.py.
-    option sztp-redirect-urls ${OPTION_143_BINARY};
+    # option 143 (SZTP RFC-8572) — points device to the SZTP redirecter SBI port.
+    # IOS-XE 17.x reads this and initiates SZTP bootstrapping (not PXE/TFTP).
+    # IMPORTANT: IOS-XE's option-143 parser has a short per-URI buffer. A full
+    # RESTCONF URI overflows it ("string copy failed for SZTP Bootstrap server
+    # URI list. Clearing option data"). Send scheme+host+port ONLY — the
+    # switch appends the RESTCONF path itself.
+    option sztp-redirect-urls "https://${NODE_IP_ADDRESS}:8080";
 }

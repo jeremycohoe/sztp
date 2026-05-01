@@ -33,3 +33,4 @@ sztp_local_files/
 dhcp/dhcpd.conf
 dhcp/dhcpd.leases
 dhcp/dhcpd.leases~
+sztp-pod27.tgz

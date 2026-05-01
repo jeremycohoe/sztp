@@ -58,7 +58,7 @@
           "name": "sbi-server-end-entity-key",
           "public-key-format": "ietf-crypto-types:subject-public-key-info-format",
           "public-key": "$SBI_PUB_KEY_B64",
-          "private-key-format": "ietf-crypto-types:rsaa-private-key-format",
+          "private-key-format": "ietf-crypto-types:ec-private-key-format",
           "cleartext-private-key": "$SBI_PRI_KEY_B64",
           "certificates": {
             "certificate": [
@@ -82,6 +82,10 @@
             {
               "name": "my-device-identity-ca-cert-circa-2020",
               "cert-data": "$CLIENT_CERT_TA_B64"
+            },
+            {
+              "name": "my-device-identity-ca-cert-act2-sudi",
+              "cert-data": "$CLIENT_CERT_TA_ACT2_B64"
             }
           ]
         }
@@ -96,7 +100,7 @@
           "verification": {
             "local-truststore-reference": {
               "certificate-bag": "my-device-identity-ca-certs",
-              "certificate": "my-device-identity-ca-cert-${SZTP_TRUST_ANCHOR}"
+              "certificate": "my-device-identity-ca-cert-act2-sudi"
             }
           },
           "serial-number-extraction": "wn-x509-c2n:serial-number"
@@ -107,7 +111,7 @@
   "wn-sztpd-1:devices": {
       "device": [
           {
-              "serial-number": "${SZTP_DEVICE_SN}",
+              "serial-number": "first-serial-number",
               "device-type": "my-device-type",
               "activation-code": "$0$my-secret",
               "response-manager": {
@@ -148,6 +152,43 @@
               "serial-number": "third-serial-number",
               "device-type": "my-device-type",
               "activation-code": "$0$my-secret",
+              "response-manager": {
+                  "matched-response": [
+                      {
+                          "name": "catch-all-response",
+                          "response": {
+                              "conveyed-information": {
+                                  "redirect-information": {
+                                      "reference": "my-redirect-information"
+                                  }
+                              }
+                          }
+                      }
+                  ]
+              }
+          },
+          {
+              "serial-number": "FCW2129G03A",
+              "device-type": "my-device-type",
+              "activation-code": "$0$my-secret",
+              "response-manager": {
+                  "matched-response": [
+                      {
+                          "name": "catch-all-response",
+                          "response": {
+                              "conveyed-information": {
+                                  "redirect-information": {
+                                      "reference": "my-redirect-information"
+                                  }
+                              }
+                          }
+                      }
+                  ]
+              }
+          },
+          {
+              "serial-number": "C9300-24T",
+              "device-type": "my-device-type",
               "response-manager": {
                   "matched-response": [
                       {
