@@ -47,7 +47,7 @@ DHCP_CONTAINER="${DHCP_CONTAINER:-sztp-dhcp-1}"
 NBI_BOOTSTRAP_PORT="${NBI_BOOTSTRAP_PORT:-7080}"
 NBI_REDIRECTER_PORT="${NBI_REDIRECTER_PORT:-7070}"
 NBI_CREDS="${NBI_CREDS:-my-admin@example.com:my-secret}"
-DHCP_CONF_PATH="${DHCP_CONF_PATH:-/data/dhcpd.conf}"
+DHCP_CONF_PATH="${DHCP_CONF_PATH:-/etc/dhcp/dhcpd.conf}"
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ENCODER="${REPO_ROOT}/scripts/encode_sztp_url.py"
@@ -64,6 +64,16 @@ if "$VALIDATOR" >/dev/null 2>&1; then
 else
     fail "artifact validator failed" "run: $VALIDATOR"
 fi
+
+# 1b. SZTP_URL must be scheme+host+port only (no path).
+# IOS-XE 17.18 appends the RESTCONF path itself; including the path here
+# produces a doubled URL and sztpd answers 404 "Unrecognized RPC."
+case "$SZTP_URL" in
+    https://*/*) fail "SZTP_URL=$SZTP_URL contains a path" \
+        "set SZTP_URL=https://HOST:PORT only (e.g. https://10.1.1.3:8080)" ;;
+    https://*)   pass "SZTP_URL has no path component" ;;
+    *)           fail "SZTP_URL=$SZTP_URL is not https://" "use https://HOST:PORT" ;;
+esac
 
 # 2. Container health
 printf '\n[2/6] container health\n'

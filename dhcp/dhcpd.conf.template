@@ -1,23 +1,19 @@
-# DHCP Server Configuration file.
-
+# DHCP Server Configuration file - RFC 8572 §8.2 binary option 143 framing.
 ddns-update-style interim;
 ignore client-updates;
 authoritative;
 allow unknown-clients;
-option sztp-redirect-urls code 143  = text;
 
+# Binary framing: uint16 BE length || URI bytes. IOS-XE 17.18 silently
+# drops `text` encoding; binary works.
+option sztp-redirect-urls code 143 = string;
 
-# internal subnet for my DHCP Server
-subnet  ${NODE_IP_SUBNET} netmask  ${NODE_IP_NETMASK} {
-    range  ${NODE_IP_RANGE_MIN}  ${NODE_IP_RANGE_MAX};
+subnet ${NODE_IP_SUBNET} netmask ${NODE_IP_NETMASK} {
+    range ${NODE_IP_RANGE_MIN} ${NODE_IP_RANGE_MAX};
     default-lease-time 600;
     max-lease-time 7200;
 
-    # option 143 (SZTP RFC-8572) — points device to the SZTP redirecter SBI port.
-    # IOS-XE 17.x reads this and initiates SZTP bootstrapping (not PXE/TFTP).
-    # IMPORTANT: IOS-XE's option-143 parser has a short per-URI buffer. A full
-    # RESTCONF URI overflows it ("string copy failed for SZTP Bootstrap server
-    # URI list. Clearing option data"). Send scheme+host+port ONLY — the
-    # switch appends the RESTCONF path itself.
-    option sztp-redirect-urls "https://${NODE_IP_ADDRESS}:8080";
+    # SZTP_URL must be scheme+host+port ONLY. Switch appends the RESTCONF
+    # path itself; including the path overflows the parser buffer.
+    option sztp-redirect-urls ${OPTION_143_BINARY};
 }

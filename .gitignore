@@ -34,3 +34,9 @@ dhcp/dhcpd.conf
 dhcp/dhcpd.leases
 dhcp/dhcpd.leases~
 sztp-pod27.tgz
+
+# Reference bundle (working snapshot from upstream; not part of repo).
+temp/
+
+# Generated PR description.
+PR_BODY.md
