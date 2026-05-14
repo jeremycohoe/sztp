@@ -6,7 +6,7 @@
 from cli import configurep, executep
 import time
 
-print("\n\n*** SZTP Pre-Configuration Script Starting (FCW2129G03A) ***\n")
+print("\n\n*** SZTP Pre-Configuration Script Starting ***\n")
 
 # Identify the device
 print("*** Device inventory ***")

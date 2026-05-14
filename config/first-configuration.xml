@@ -1,8 +1,7 @@
 <config xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
   <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native">
 
-    <!-- Hostname -->
-    <hostname>sztp-c9300x-pod27</hostname>
+    <!-- Hostname is set per-chassis-SN by the post-configuration script. -->
 
     <!-- Local user: admin / Cisco123 -->
     <username>
@@ -31,20 +30,7 @@
       </authorization>
     </aaa>
 
-    <!-- Management IP: Vlan1 10.1.1.101/24 -->
-    <interface>
-      <Vlan>
-        <name>1</name>
-        <ip>
-          <address>
-            <primary>
-              <address>10.1.1.101</address>
-              <mask>255.255.255.0</mask>
-            </primary>
-          </address>
-        </ip>
-      </Vlan>
-    </interface>
+    <!-- Management VLAN and IP are set per-chassis-SN by the post-configuration script. -->
 
     <!-- Default route via SZTP server -->
     <ip>
