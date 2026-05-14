@@ -1111,6 +1111,204 @@
             }
           ]
         }
+      },
+      {
+        "serial-number": "C9400-SUP-1",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9400-SUP-1XL",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9400-SUP-1XL-Y",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9400X-SUP-2",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9400X-SUP-2XL",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9404R",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9407R",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9410R",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9600-SUP-1",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9600X-SUP-2",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9606R",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "redirect-information": {
+                    "reference": "my-redirect-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
       }
     ]
   },

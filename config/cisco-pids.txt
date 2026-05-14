@@ -90,3 +90,26 @@ C9500-48Y4C,act2
 # -----------------------------------------------------------------------------
 C9500X-28C8D,hasudi
 C9500X-60L4D,hasudi
+
+# -----------------------------------------------------------------------------
+# Catalyst 9400  (modular chassis; SUDI is presented by the active supervisor)
+# Supervisor 1 / 1XL / 1XL-Y are ACT2; Supervisor 2 / 2XL are HA-SUDI.
+# Register both the supervisor PIDs (what SUDI presents) and the chassis
+# PIDs in case future IOS-XE releases switch the reported PID.
+# -----------------------------------------------------------------------------
+C9400-SUP-1,act2
+C9400-SUP-1XL,act2
+C9400-SUP-1XL-Y,act2
+C9400X-SUP-2,hasudi
+C9400X-SUP-2XL,hasudi
+C9404R,act2
+C9407R,act2
+C9410R,act2
+
+# -----------------------------------------------------------------------------
+# Catalyst 9600  (modular chassis; SUDI is presented by the active supervisor)
+# Supervisor 1 is ACT2; Supervisor 2 is HA-SUDI.
+# -----------------------------------------------------------------------------
+C9600-SUP-1,act2
+C9600X-SUP-2,hasudi
+C9606R,act2
