@@ -42,7 +42,7 @@
       ]
     }
   },
-  "wn-sztpd-1:admin-accounts":{
+  "wn-sztpd-1:admin-accounts": {
     "admin-account": [
       {
         "email-address": "my-admin@example.com",
@@ -95,12 +95,24 @@
   "wn-sztpd-1:device-types": {
     "device-type": [
       {
-        "name": "my-device-type",
+        "name": "cisco-act2-device-type",
         "identity-certificates": {
           "verification": {
             "local-truststore-reference": {
               "certificate-bag": "my-device-identity-ca-certs",
               "certificate": "my-device-identity-ca-cert-act2-sudi"
+            }
+          },
+          "serial-number-extraction": "wn-x509-c2n:serial-number"
+        }
+      },
+      {
+        "name": "cisco-hasudi-device-type",
+        "identity-certificates": {
+          "verification": {
+            "local-truststore-reference": {
+              "certificate-bag": "my-device-identity-ca-certs",
+              "certificate": "my-device-identity-ca-cert-circa-2020"
             }
           },
           "serial-number-extraction": "wn-x509-c2n:serial-number"
@@ -111,9 +123,8 @@
   "wn-sztpd-1:devices": {
     "device": [
       {
-        "serial-number": "first-serial-number",
-        "device-type": "my-device-type",
-        "activation-code": "$0$my-secret",
+        "serial-number": "C9200-24T",
+        "device-type": "cisco-act2-device-type",
         "response-manager": {
           "matched-response": [
             {
@@ -130,9 +141,8 @@
         }
       },
       {
-        "serial-number": "second-serial-number",
-        "device-type": "my-device-type",
-        "activation-code": "$0$my-secret",
+        "serial-number": "C9200-24P",
+        "device-type": "cisco-act2-device-type",
         "response-manager": {
           "matched-response": [
             {
@@ -140,7 +150,7 @@
               "response": {
                 "conveyed-information": {
                   "onboarding-information": {
-                    "reference": "second-onboarding-information"
+                    "reference": "first-onboarding-information"
                   }
                 }
               }
@@ -149,9 +159,8 @@
         }
       },
       {
-        "serial-number": "third-serial-number",
-        "device-type": "my-device-type",
-        "activation-code": "$0$my-secret",
+        "serial-number": "C9200-48T",
+        "device-type": "cisco-act2-device-type",
         "response-manager": {
           "matched-response": [
             {
@@ -159,7 +168,7 @@
               "response": {
                 "conveyed-information": {
                   "onboarding-information": {
-                    "reference": "third-onboarding-information"
+                    "reference": "first-onboarding-information"
                   }
                 }
               }
@@ -168,9 +177,206 @@
         }
       },
       {
-        "serial-number": "FCW2129G03A",
-        "device-type": "my-device-type",
-        "activation-code": "$0$my-secret",
+        "serial-number": "C9200-48P",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200L-24T-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200L-24P-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200L-48T-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200L-48P-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200L-24T-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200L-24P-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200L-48T-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200L-48P-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200CX-12T",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200CX-12P",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9200CX-8P-E",
+        "device-type": "cisco-act2-device-type",
         "response-manager": {
           "matched-response": [
             {
@@ -188,7 +394,709 @@
       },
       {
         "serial-number": "C9300-24T",
-        "device-type": "my-device-type",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-24P",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-24U",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-24S",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-24UX",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-48T",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-48P",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-48U",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-48UN",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300-48UXM",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-24T-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-24P-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-48T-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-48P-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-24T-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-24P-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-48T-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-48P-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-48PF-4G",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-48PF-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-48UXG-2Q",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300L-48UXG-4X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300LM-24T-4Y",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300LM-48T-4Y",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300LM-48UX-4Y",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300X-12Y",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300X-24Y",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300X-48HX",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300X-48HXN",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9300X-48TX",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500-12Q",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500-16X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500-24Q",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500-24Y4C",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500-32C",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500-32QC",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500-40X",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500-48Y4C",
+        "device-type": "cisco-act2-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500X-28C8D",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "serial-number": "C9500X-60L4D",
+        "device-type": "cisco-hasudi-device-type",
         "response-manager": {
           "matched-response": [
             {
@@ -250,83 +1158,83 @@
     ]
   },
   "wn-sztpd-1:scripts": {
-      "pre-configuration-script": [
-          {
-              "name": "first-pre-configuration-script",
-              "script": "$FIRST_PRE_SCRIPT_B64"
-          },
-          {
-              "name": "second-pre-configuration-script",
-              "script": "$SECOND_PRE_SCRIPT_B64"
-          },
-          {
-              "name": "third-pre-configuration-script",
-              "script": "$THIRD_PRE_SCRIPT_B64"
-          }
-      ],
-      "post-configuration-script": [
-          {
-              "name": "first-post-configuration-script",
-              "script": "$FIRST_POST_SCRIPT_B64"
-          },
-          {
-              "name": "second-post-configuration-script",
-              "script": "$SECOND_POST_SCRIPT_B64"
-          },
-          {
-              "name": "third-post-configuration-script",
-              "script": "$THIRD_POST_SCRIPT_B64"
-          }
-      ]
+    "pre-configuration-script": [
+      {
+        "name": "first-pre-configuration-script",
+        "script": "$FIRST_PRE_SCRIPT_B64"
+      },
+      {
+        "name": "second-pre-configuration-script",
+        "script": "$SECOND_PRE_SCRIPT_B64"
+      },
+      {
+        "name": "third-pre-configuration-script",
+        "script": "$THIRD_PRE_SCRIPT_B64"
+      }
+    ],
+    "post-configuration-script": [
+      {
+        "name": "first-post-configuration-script",
+        "script": "$FIRST_POST_SCRIPT_B64"
+      },
+      {
+        "name": "second-post-configuration-script",
+        "script": "$SECOND_POST_SCRIPT_B64"
+      },
+      {
+        "name": "third-post-configuration-script",
+        "script": "$THIRD_POST_SCRIPT_B64"
+      }
+    ]
   },
   "wn-sztpd-1:configurations": {
-      "configuration": [
-          {
-              "name": "first-configuration",
-              "configuration-handling": "merge",
-              "config": "$FIRST_CONFIG_B64"
-          },
-          {
-              "name": "second-configuration",
-              "configuration-handling": "merge",
-              "config": "$SECOND_CONFIG_B64"
-          },
-          {
-              "name": "third-configuration",
-              "configuration-handling": "merge",
-              "config": "$THIRD_CONFIG_B64"
-          }
-      ]
+    "configuration": [
+      {
+        "name": "first-configuration",
+        "configuration-handling": "merge",
+        "config": "$FIRST_CONFIG_B64"
+      },
+      {
+        "name": "second-configuration",
+        "configuration-handling": "merge",
+        "config": "$SECOND_CONFIG_B64"
+      },
+      {
+        "name": "third-configuration",
+        "configuration-handling": "merge",
+        "config": "$THIRD_CONFIG_B64"
+      }
+    ]
   },
   "wn-sztpd-1:conveyed-information-responses": {
-      "onboarding-information-response": [
-          {
-              "name": "first-onboarding-information",
-              "onboarding-information": {
-                  "boot-image": "first-boot-image.img",
-                  "pre-configuration-script": "first-pre-configuration-script",
-                  "configuration": "first-configuration",
-                  "post-configuration-script": "first-post-configuration-script"
-              }
-          },
-          {
-              "name": "second-onboarding-information",
-              "onboarding-information": {
-                  "boot-image": "second-boot-image.img",
-                  "pre-configuration-script": "second-pre-configuration-script",
-                  "configuration": "second-configuration",
-                  "post-configuration-script": "second-post-configuration-script"
-              }
-          },
-          {
-              "name": "third-onboarding-information",
-              "onboarding-information": {
-                  "boot-image": "third-boot-image.img",
-                  "pre-configuration-script": "third-pre-configuration-script",
-                  "configuration": "third-configuration",
-                  "post-configuration-script": "third-post-configuration-script"
-              }
-          }
-      ]
+    "onboarding-information-response": [
+      {
+        "name": "first-onboarding-information",
+        "onboarding-information": {
+          "boot-image": "first-boot-image.img",
+          "pre-configuration-script": "first-pre-configuration-script",
+          "configuration": "first-configuration",
+          "post-configuration-script": "first-post-configuration-script"
+        }
+      },
+      {
+        "name": "second-onboarding-information",
+        "onboarding-information": {
+          "boot-image": "second-boot-image.img",
+          "pre-configuration-script": "second-pre-configuration-script",
+          "configuration": "second-configuration",
+          "post-configuration-script": "second-post-configuration-script"
+        }
+      },
+      {
+        "name": "third-onboarding-information",
+        "onboarding-information": {
+          "boot-image": "third-boot-image.img",
+          "pre-configuration-script": "third-pre-configuration-script",
+          "configuration": "third-configuration",
+          "post-configuration-script": "third-post-configuration-script"
+        }
+      }
+    ]
   }
 }

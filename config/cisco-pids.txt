@@ -1,0 +1,92 @@
+# Cisco Catalyst 9000-series PID catalog for sZTPD device pre-registration.
+#
+# One row per Product ID (PID). sZTPD matches incoming devices on the PID
+# token from the SUDI subject's serialNumber attribute (OID 2.5.4.5), so
+# every PID you intend to onboard must appear here.
+#
+# Format: <PID>,<sudi_generation>
+#   sudi_generation = act2     for SHA-1 / Cisco Root CA 2048 (older Cat9k)
+#                   = hasudi   for SHA-256 / Cisco Root CA 2099 (C9300X, C9500X, 8000V)
+#
+# Lines starting with '#' and blank lines are ignored. Whitespace tolerated.
+#
+# Re-generate the JSON templates after editing:
+#   scripts/render-device-entries.py
+#
+# Then recreate the containers:
+#   docker compose --env-file config/catalyst/c9300.env up -d --force-recreate bootstrap redirecter
+
+# -----------------------------------------------------------------------------
+# Catalyst 9200 / 9200L / 9200CX  (ACT2 SUDI)
+# -----------------------------------------------------------------------------
+C9200-24T,act2
+C9200-24P,act2
+C9200-48T,act2
+C9200-48P,act2
+C9200L-24T-4G,act2
+C9200L-24P-4G,act2
+C9200L-48T-4G,act2
+C9200L-48P-4G,act2
+C9200L-24T-4X,act2
+C9200L-24P-4X,act2
+C9200L-48T-4X,act2
+C9200L-48P-4X,act2
+C9200CX-12T,act2
+C9200CX-12P,act2
+C9200CX-8P-E,act2
+
+# -----------------------------------------------------------------------------
+# Catalyst 9300 / 9300L / 9300LM  (ACT2 SUDI)
+# -----------------------------------------------------------------------------
+C9300-24T,act2
+C9300-24P,act2
+C9300-24U,act2
+C9300-24S,act2
+C9300-24UX,act2
+C9300-48T,act2
+C9300-48P,act2
+C9300-48U,act2
+C9300-48UN,act2
+C9300-48UXM,act2
+C9300L-24T-4G,act2
+C9300L-24P-4G,act2
+C9300L-48T-4G,act2
+C9300L-48P-4G,act2
+C9300L-24T-4X,act2
+C9300L-24P-4X,act2
+C9300L-48T-4X,act2
+C9300L-48P-4X,act2
+C9300L-48PF-4G,act2
+C9300L-48PF-4X,act2
+C9300L-48UXG-2Q,act2
+C9300L-48UXG-4X,act2
+C9300LM-24T-4Y,act2
+C9300LM-48T-4Y,act2
+C9300LM-48UX-4Y,act2
+
+# -----------------------------------------------------------------------------
+# Catalyst 9300X  (HA-SUDI / SHA-256)
+# -----------------------------------------------------------------------------
+C9300X-12Y,hasudi
+C9300X-24Y,hasudi
+C9300X-48HX,hasudi
+C9300X-48HXN,hasudi
+C9300X-48TX,hasudi
+
+# -----------------------------------------------------------------------------
+# Catalyst 9500  (ACT2 SUDI)
+# -----------------------------------------------------------------------------
+C9500-12Q,act2
+C9500-16X,act2
+C9500-24Q,act2
+C9500-24Y4C,act2
+C9500-32C,act2
+C9500-32QC,act2
+C9500-40X,act2
+C9500-48Y4C,act2
+
+# -----------------------------------------------------------------------------
+# Catalyst 9500X  (HA-SUDI / SHA-256)
+# -----------------------------------------------------------------------------
+C9500X-28C8D,hasudi
+C9500X-60L4D,hasudi

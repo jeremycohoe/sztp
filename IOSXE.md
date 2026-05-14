@@ -503,14 +503,49 @@ sztpd matches the calling device by the **PID** token from the SUDI subject
 share one entry. Switches with different roles can point at different
 `onboarding-information` references while sharing one `device-type`.
 
-Recommended schema for a 10–20 PID fleet:
+#### Pre-populated catalog (recommended)
+
+This repo ships a flat catalog of common Catalyst 9000 PIDs at
+[config/cisco-pids.txt](config/cisco-pids.txt) and a generator that
+rewrites both sztpd JSON templates from it:
+
+```sh
+# Edit the catalog (add/remove PIDs, set ACT2 vs HA-SUDI per row)
+${EDITOR:-vi} config/cisco-pids.txt
+
+# Regenerate both templates (idempotent)
+scripts/render-device-entries.py
+
+# Apply
+docker compose --env-file config/catalyst/c9300.env up -d \
+    --force-recreate bootstrap redirecter
+```
+
+The generator emits **two device-types** (regardless of the catalog):
+
+- `cisco-act2-device-type`   → `my-device-identity-ca-cert-act2-sudi`
+- `cisco-hasudi-device-type` → `my-device-identity-ca-cert-circa-2020`
+
+…and one device entry per PID, each pointing at the appropriate
+device-type. All entries share one response — `my-redirect-information`
+in the redirecter, `first-onboarding-information` in the bootstrap. To
+differentiate by role, edit the templates after generation or extend the
+generator (it's ~150 lines).
+
+CI guard:
+
+```sh
+scripts/render-device-entries.py --check     # exit 1 if templates are stale
+```
+
+#### Manual / role-based layout (if the catalog isn't enough)
 
 ```
 device-type (1–2 entries)
   ├─ act2-device-type      → act2-sudi   truststore   (C9300/9200/ISR/ASR)
   └─ hasudi-device-type    → circa-2020  truststore   (C9300X/9500X/8000V)
 
-devices (one per PID, e.g. 10–20 entries)
+devices (one per PID)
   ├─ C9300-24T   → act2-device-type    → access-switch-config
   ├─ C9300-24S   → act2-device-type    → access-switch-config
   ├─ C9300-48P   → act2-device-type    → access-switch-config
