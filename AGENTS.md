@@ -44,10 +44,14 @@ subnet ${NODE_IP_SUBNET} netmask ${NODE_IP_NETMASK} {
 ```
 
 `${OPTION_143_BINARY}` is rendered by [dhcp/entrypoint.sh](dhcp/entrypoint.sh)
-from `SZTP_URL` (set in `docker-compose.yml`). Default value:
+from `SZTP_URL` (set in `docker-compose.yml` / `config/catalyst/c9300.env`).
+`SZTP_URL` **must be scheme+host+port only** — the switch appends the
+RESTCONF path itself, and including the path causes a doubled URL / 404.
+`dhcp/entrypoint.sh` and `scripts/sztp-preflight.sh` both refuse a path.
+Default value:
 
 ```
-SZTP_URL=https://10.1.1.3:9090/restconf/operations/ietf-sztp-bootstrap-server:get-bootstrapping-data
+SZTP_URL=https://10.1.1.3:8080
 ```
 
 ## DHCP — simplification rules

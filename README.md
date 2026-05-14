@@ -32,15 +32,16 @@ Helper scripts for bringing up and validating the SZTP stack:
 | [scripts/run-interop-matrix.sh](scripts/run-interop-matrix.sh) | Drive `tests/interop-matrix.yaml` through encoder + preflight per row. |
 | [scripts/export-sanitized-bundle.sh](scripts/export-sanitized-bundle.sh) | Build a tarball for sharing, with private keys and vouchers stripped. |
 
-Cisco Catalyst lab bring-up (non-default, activated with a profile):
+Cisco Catalyst lab bring-up:
 
 ```bash
-export SZTP_URL="https://10.1.1.3:8080"
-docker-compose --env-file config/catalyst/c9300.env --profile iosxe up -d
+docker compose --env-file config/catalyst/c9300.env up -d
 scripts/sztp-preflight.sh --env-file config/catalyst/c9300.env
 ```
 
-See [dhcp/examples/](dhcp/examples/README.md) for paste-ready DHCP
+**See [IOSXE.md](IOSXE.md) for the complete IOS-XE bootstrap guide** —
+prerequisites, crypto artifacts, DHCP option 143, sztpd patches, error
+table. [dhcp/examples/](dhcp/examples/README.md) has paste-ready DHCP
 snippets (ISC dhcpd, Cisco IOS/IOS-XE).
 
 ## Docs
