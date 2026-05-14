@@ -457,17 +457,94 @@ def _install_cms_wrapper_patch():
             print(f"sitecustomize: could not load owner-cert bag {_owner_chain_path}: {e}",
                   file=sys.stderr)
 
+        # ------------------------------------------------------------------
+        # Per-chassis voucher selection.
+        # The fallback voucher comes from SZTP_OWNERSHIP_VOUCHER_CMS (env).
+        # For multi-device fleets, drop one .vcj per chassis into the
+        # directory pointed to by SZTP_VOUCHER_DIR (default: /local_files).
+        # At request time we read the calling cert's SUDI subject (OID
+        # 2.5.4.5 = "PID:<PID> SN:<CHASSIS_SN>"), pull the SN: token, and
+        # serve <SZTP_VOUCHER_DIR>/<CHASSIS_SN>.vcj if it exists. If not,
+        # we fall back to the static voucher (preserving single-device
+        # behavior).
+        # ------------------------------------------------------------------
+        from contextvars import ContextVar as _CV
+        _current_chassis_sn = _CV("sztp_chassis_sn", default=None)
+
+        # Hook cryptography.x509.Name.get_attributes_for_oid so that every
+        # SUDI lookup sztpd does (rfc8572.py line ~249) also captures the
+        # chassis SN into the request's contextvar.
+        try:
+            from cryptography import x509 as _cx509
+            _SUDI_OID = _cx509.ObjectIdentifier("2.5.4.5")
+            _orig_attrs = _cx509.Name.get_attributes_for_oid
+
+            def _hooked_attrs(self, oid):
+                result = _orig_attrs(self, oid)
+                try:
+                    if oid == _SUDI_OID and result:
+                        full_value = result[0].value
+                        for tok in full_value.split():
+                            if tok.startswith("SN:"):
+                                _current_chassis_sn.set(tok[3:])
+                                break
+                except Exception:
+                    pass
+                return result
+
+            _cx509.Name.get_attributes_for_oid = _hooked_attrs
+            print("sitecustomize: x509.Name.get_attributes_for_oid hooked "
+                  "for per-chassis SN capture", file=sys.stderr)
+        except Exception as e:
+            print(f"sitecustomize: chassis-SN capture hook failed: {e}",
+                  file=sys.stderr)
+
+        _voucher_dir = os.environ.get("SZTP_VOUCHER_DIR", "/local_files")
+        _voucher_cache = {}  # chassis_sn -> base64 string, populated lazily
+
+        def _load_voucher_b64(path):
+            with open(path, "rb") as f:
+                return _b64.b64encode(f.read()).decode("ASCII")
+
+        # Static fallback voucher (single-device legacy path).
         _voucher_b64 = None
         _voucher_path = os.environ.get("SZTP_OWNERSHIP_VOUCHER_CMS", "")
         if _voucher_path:
             try:
-                with open(_voucher_path, "rb") as f:
-                    _voucher_b64 = _b64.b64encode(f.read()).decode("ASCII")
-                print(f"sitecustomize: loaded ownership-voucher from {_voucher_path}",
+                _voucher_b64 = _load_voucher_b64(_voucher_path)
+                print(f"sitecustomize: loaded fallback ownership-voucher from {_voucher_path}",
                       file=sys.stderr)
             except Exception as e:
-                print(f"sitecustomize: could not load voucher {_voucher_path}: {e}",
+                print(f"sitecustomize: could not load fallback voucher {_voucher_path}: {e}",
                       file=sys.stderr)
+
+        def _voucher_for_request():
+            """Return (voucher_b64, source_label) for the in-flight request.
+
+            Picks <SZTP_VOUCHER_DIR>/<CHASSIS_SN>.vcj if the SUDI capture
+            saw a chassis SN AND that file exists; otherwise the static
+            fallback from SZTP_OWNERSHIP_VOUCHER_CMS; otherwise (None, None).
+            """
+            sn = _current_chassis_sn.get()
+            if sn:
+                cached = _voucher_cache.get(sn)
+                if cached is not None:
+                    return cached, f"cached:{sn}.vcj"
+                path = os.path.join(_voucher_dir, f"{sn}.vcj")
+                try:
+                    blob = _load_voucher_b64(path)
+                    _voucher_cache[sn] = blob
+                    print(f"sitecustomize: loaded per-chassis voucher {path}",
+                          file=sys.stderr, flush=True)
+                    return blob, f"{sn}.vcj"
+                except FileNotFoundError:
+                    pass  # fall through to env-var fallback
+                except Exception as e:
+                    print(f"sitecustomize: per-chassis voucher {path} load failed: {e}",
+                          file=sys.stderr)
+            if _voucher_b64 is not None:
+                return _voucher_b64, "fallback(env)"
+            return None, None
 
         def _patched_obj_to_str(obj, enc, dm, sn, strip_wrapper=False):
             try:
@@ -478,10 +555,11 @@ def _install_cms_wrapper_patch():
                         and "owner-certificate" not in obj[_OUTPUT_KEY]
                         and _owner_cert_b64 is not None):
                     obj[_OUTPUT_KEY]["owner-certificate"] = _owner_cert_b64
-                    if _voucher_b64 is not None:
-                        obj[_OUTPUT_KEY]["ownership-voucher"] = _voucher_b64
+                    voucher_b64, voucher_src = _voucher_for_request()
+                    if voucher_b64 is not None:
+                        obj[_OUTPUT_KEY]["ownership-voucher"] = voucher_b64
                     print("sitecustomize: injected owner-certificate"
-                          + (" + ownership-voucher" if _voucher_b64 else "")
+                          + (f" + ownership-voucher [{voucher_src}]" if voucher_b64 else "")
                           + " into RPC output", file=sys.stderr, flush=True)
                     result = _orig_obj_to_str(obj, enc, dm, sn, strip_wrapper=strip_wrapper)
                     # Dump the serialized XML so we can see exactly what we're sending

@@ -22,7 +22,8 @@ This file **supersedes** the previous `iosxe.md`, `iosxe2.md`, and
 9. [Reload the switch and watch](#9-reload-the-switch-and-watch)
 10. [Why the sztpd container needs patches](#10-why-the-sztpd-container-needs-patches)
 11. [Error → fix lookup table](#11-error--fix-lookup-table)
-12. [New-device checklist](#12-new-device-checklist)
+12. [Fleet operation — multiple devices](#12-fleet-operation--multiple-devices)
+13. [New-device checklist](#13-new-device-checklist)
 
 ---
 
@@ -492,7 +493,92 @@ prefix.
 
 ---
 
-## 12. New-device checklist
+## 12. Fleet operation — multiple devices
+
+### 12.1 Per-PID device entries
+
+sztpd matches the calling device by the **PID** token from the SUDI subject
+(see §4). It does not support wildcards — you need one entry under
+`wn-sztpd-1:devices` per distinct PID. Many switches sharing the same PID
+share one entry. Switches with different roles can point at different
+`onboarding-information` references while sharing one `device-type`.
+
+Recommended schema for a 10–20 PID fleet:
+
+```
+device-type (1–2 entries)
+  ├─ act2-device-type      → act2-sudi   truststore   (C9300/9200/ISR/ASR)
+  └─ hasudi-device-type    → circa-2020  truststore   (C9300X/9500X/8000V)
+
+devices (one per PID, e.g. 10–20 entries)
+  ├─ C9300-24T   → act2-device-type    → access-switch-config
+  ├─ C9300-24S   → act2-device-type    → access-switch-config
+  ├─ C9300-48P   → act2-device-type    → access-switch-config
+  ├─ C9500-24Y4C → act2-device-type    → distribution-config
+  └─ C9500X-28C8D→ hasudi-device-type → distribution-config
+
+onboarding-information (a few, by role)
+  ├─ access-switch-config
+  └─ distribution-config
+```
+
+Keep onboarding-information small in count and differentiate per chassis
+inside the `pre-` / `post-configuration-script` (those scripts can run
+`show inventory` on the switch and branch on the chassis SN).
+
+### 12.2 Per-chassis voucher selection (built-in)
+
+Each physical switch needs its own MASA voucher. The bootstrap container
+resolves vouchers per-request:
+
+1. **Per-chassis match.** If the in-flight calling cert's SUDI subject
+   contains an `SN:<CHASSIS_SN>` token (it always does on Catalyst), the
+   container looks for `${SZTP_VOUCHER_DIR}/<CHASSIS_SN>.vcj`. If found,
+   that voucher is served.
+2. **Fallback.** If no per-chassis voucher is staged, the container falls
+   back to the static voucher pointed to by `SZTP_OWNERSHIP_VOUCHER_CMS`.
+   This preserves single-device behaviour.
+
+Defaults: `SZTP_VOUCHER_DIR=/local_files`. Drop one `.vcj` per chassis
+into `local_files/` and you're done — no env-var edits between
+onboardings:
+
+```sh
+ls local_files/*.vcj
+# local_files/FCW2126G05V.vcj
+# local_files/FCW2305H011.vcj
+# local_files/FCW2401N7XX.vcj
+# ...
+```
+
+The bootstrap log prints which voucher is served on each request:
+
+```
+sitecustomize: loaded per-chassis voucher /local_files/FCW2126G05V.vcj
+sitecustomize: injected owner-certificate + ownership-voucher [FCW2126G05V.vcj] into RPC output
+```
+
+`[fallback(env)]` in that line means the per-chassis lookup did not find
+the file and the static voucher was served instead.
+
+### 12.3 Boot images per PID
+
+If different PIDs run different IOS-XE images, point each
+`onboarding-information` at a different `boot-image` reference. The
+stack supports multiple boot-images side by side.
+
+### 12.4 What you still need per chassis
+
+| Per | Required artifact |
+|---|---|
+| **PID** (e.g. `C9300-24T`) | One `serial-number` entry under `wn-sztpd-1:devices` in both JSON templates |
+| **Chassis SN** (e.g. `FCW2126G05V`) | One MASA-issued `.vcj` voucher in `local_files/` |
+| **SUDI generation** | One `device-type` per family (max 2: ACT2 + HA-SUDI) |
+| **Role / config profile** | One `onboarding-information` reference; can be shared across PIDs |
+
+---
+
+## 13. New-device checklist
 
 1. Confirm SUDI generation (ACT2 or HA-SUDI) — `show platform sudi certificate sign nonce 1`.
 2. Place the Cisco MASA voucher at `local_files/<CHASSIS_SN>.vcj`.
