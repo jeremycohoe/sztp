@@ -145,10 +145,16 @@ def discover_chassis_sn():
     return m.group(1) if m else None
 
 
+# Visual marker so sZTP-onboarded devices are distinguishable from
+# classic-ZTP-onboarded ones at a glance (e.g. cat9300-pod22b-sztp).
+SZTP_HOSTNAME_SUFFIX = "-sztp"
+
+
 def apply_pod_identity(hostname, vlan, last_octet):
-    """Set hostname, mgmt VLAN, and mgmt IP for this pod."""
-    print(f"*** Applying pod identity: {hostname} vlan={vlan} ip=10.1.1.{last_octet} ***")
-    configurep([f"hostname {hostname}", "end"])
+    """Set hostname (with -sztp suffix), mgmt VLAN, and mgmt IP for this pod."""
+    sztp_hostname = f"{hostname}{SZTP_HOSTNAME_SUFFIX}"
+    print(f"*** Applying pod identity: {sztp_hostname} vlan={vlan} ip=10.1.1.{last_octet} ***")
+    configurep([f"hostname {sztp_hostname}", "end"])
 
     # Create the per-pod VLAN, move mgmt onto it, drop default Vlan1 IP.
     configurep([f"vlan {vlan}", "end"])
@@ -162,6 +168,25 @@ def apply_pod_identity(hostname, vlan, last_octet):
 
     # Default route via the sZTP server / lab gateway (mirrors classic ZTP).
     configurep(["ip route 0.0.0.0 0.0.0.0 10.1.1.3", "end"])
+
+    # Set HTTP/TFTP source interface so management traffic uses the pod VLAN.
+    configurep([
+        f"ip http client source-interface Vlan{vlan}",
+        f"ip tftp source-interface Vlan{vlan}",
+        "end",
+    ])
+
+    # Push all access ports onto the pod VLAN (range commands per platform).
+    # Best-effort: any range that doesn't exist on this platform is ignored.
+    for cmd_range in (
+        f"interface range Gi1/0/1 - 24",
+        f"interface range Gi1/0/1 - 48",
+        f"interface range Te1/0/1 - 48",
+    ):
+        try:
+            configurep([cmd_range, f" switchport access vlan {vlan}", "end"])
+        except Exception as e:
+            print(f"DEBUG: range {cmd_range} not applicable: {e}")
 
 
 def apply_uplink_role(hostname):
@@ -182,34 +207,197 @@ def apply_uplink_role(hostname):
 chassis_sn = discover_chassis_sn()
 print(f"*** Chassis serial: {chassis_sn} ***")
 
+is_c9350 = False
+show_inv = cli("show inventory | include PID") or ""
+if "C9350" in show_inv:
+    is_c9350 = True
+
 if chassis_sn and chassis_sn in PODS:
     hostname, vlan, last_octet = PODS[chassis_sn]
     apply_pod_identity(hostname, vlan, last_octet)
     apply_uplink_role(hostname)
 else:
     # Unknown chassis — leave a clear breadcrumb in the running config.
-    fallback = f"sztp-unprovisioned-{chassis_sn or 'unknown'}"
+    fallback = f"sztp-unprovisioned-{chassis_sn or 'unknown'}{SZTP_HOSTNAME_SUFFIX}"
     print(f"*** Chassis SN {chassis_sn!r} not in PODS table — using fallback hostname {fallback} ***")
     configurep([f"hostname {fallback}", "end"])
+    vlan = None  # skip per-VLAN follow-ons
 
 # --------------------------------------------------------------------------
 # Common day-0 hardening (applies to every pod)
+# Ported from /var/www/html/ztp-simple.py — runs alongside the NETCONF merge
+# in first-configuration.xml. AAA / SSH / NETCONF / RESTCONF / NTP / DNS /
+# default route / logging buffered / scp / service timestamps are already
+# applied by that XML merge and are NOT duplicated here.
 # --------------------------------------------------------------------------
+
 print("*** Enabling gNMI ***")
 configurep([
     "gnxi",
     " gnxi secure-init",
     " gnxi secure-allow-self-signed-trustpoint",
+    " gnxi server",
     "end",
 ])
 
 print("*** TCP / TFTP tuning for management traffic ***")
 configurep(["ip tcp window-size 65535", "ip tftp blocksize 8192", "end"])
 
+# CoPP rate tuning — speeds up day-0 image / file pulls.
+print("*** Applying CoPP policy for faster image download ***")
+copp_commands = [
+    "policy-map system-cpp-policy",
+    " class system-cpp-police-forus",
+    "  police rate 20000 pps",
+]
+if not is_c9350:
+    # These classes don't exist on the C9350 / Q200-based platforms.
+    copp_commands += [
+        " class system-cpp-police-data",
+        "  police rate 20000 pps",
+        " class system-cpp-police-sys-data",
+        "  police rate 20000 pps",
+    ]
+copp_commands += [
+    " class system-cpp-police-sw-forward",
+    "  police rate 20000 pps",
+    "end",
+]
+try:
+    configurep(copp_commands)
+except Exception as e:
+    print(f"DEBUG: CoPP tuning skipped: {e}")
+
+# VTP transparent — required for the lab's per-pod VLAN model.
+print("*** Setting VTP mode transparent ***")
+configurep(["vtp mode transparent", "end"])
+
+# Catch-all EEM applet — every CLI command is mirrored to syslog.
+print("*** Installing catch-all EEM applet ***")
+configurep([
+    "no event manager applet catchall",
+    "event manager applet catchall",
+    ' event cli pattern ".*" sync no skip no',
+    ' action 1 syslog msg "$_cli_msg"',
+    "end",
+])
+
+# Loopback0 for router-id / NETCONF source / lab IGP.
+print("*** Creating Loopback0 ***")
+configurep([
+    "interface Loopback0",
+    " ip address 192.168.12.1 255.255.255.0",
+    "end",
+])
+
+# SNMP RO community (YANG Suite SNMP→YANG mapping use case).
+print("*** Enabling SNMP RO community ***")
+configurep(["snmp-server community Cisco123 RO", "end"])
+
+# Line VTY (line vty 0 32, transport all, no idle timeout) — beyond XML merge.
+print("*** Tuning VTY lines ***")
+configurep([
+    "line vty 0 32",
+    " transport input all",
+    " exec-timeout 0 0",
+    "end",
+])
+configurep([
+    "line con 0",
+    " logging synchronous limit 1000",
+    "end",
+])
+
+# Additional syslog target (UDP 5144 — lab MDT collector).
+print("*** Adding syslog target 10.1.1.3:5144 ***")
+configurep(["logging host 10.1.1.3 transport udp port 5144", "end"])
+
+# Clock / timezone — XML merge sets NTP server only.
+print("*** Setting timezone (Pacific) ***")
+configurep([
+    "clock timezone Pacific -8 0",
+    "clock summer-time PDST recurring",
+    "end",
+])
+configurep([
+    "service timestamps debug datetime msec localtime show-timezone year",
+    "service timestamps log datetime msec localtime show-timezone year",
+    "end",
+])
+
+# Boot enable-break for OOB recovery (lab convenience).
+print("*** Enabling boot break ***")
+configurep(["boot enable-break switch 1", "end"])
+
+# Telemetry / MDT dial-out subscriptions to the lab collector on 10.1.1.3:57500.
+print("*** Configuring MDT telemetry subscriptions ***")
+MDT_SUBS = [
+    (6041337,  "/process-cpu-ios-xe-oper:cpu-usage/cpu-utilization/five-seconds", 30000),
+    (2024001,  "/environment-sensors",                                                60000),
+    (2024002,  "/oc-platform:components",                                              60000),
+    (2024003,  "/platform-ios-xe-oper:components/component",                           60000),
+    (2024004,  "/platform-ios-xe-oper:components/component/platform-properties/platform-property", 60000),
+    (2024005,  "/poe-oper-data/poe-module",                                            60000),
+    (2024006,  "/poe-oper-data/poe-port-detail",                                       60000),
+    (2024007,  "/poe-oper-data/poe-stack",                                             60000),
+    (2024008,  "/poe-oper-data/poe-switch",                                            60000),
+]
+for sub_id, xpath, period in MDT_SUBS:
+    try:
+        configurep([
+            f"telemetry ietf subscription {sub_id}",
+            " encoding encode-kvgpb",
+            f" filter xpath {xpath}",
+            " stream yang-push",
+            f" update-policy periodic {period}",
+            " receiver ip address 10.1.1.3 57500 protocol grpc-tcp",
+            "end",
+        ])
+    except Exception as e:
+        print(f"DEBUG: MDT sub {sub_id} skipped: {e}")
+
+# Pre-provision Guest Shell + NAT (VLAN 4094, 192.168.2.0/24).
+print("*** Pre-provisioning Guest Shell + NAT ***")
+configurep(["iox", "end"])
+configurep([
+    "ip access-list standard NAT_ACL",
+    " permit 192.168.0.0 0.0.255.255",
+    "end",
+])
+configurep(["ip nat inside source list NAT_ACL interface Vlan1 overload", "end"])
+configurep(["vlan 4094", "end"])
+configurep([
+    "interface Vlan4094",
+    " ip address 192.168.2.1 255.255.255.0",
+    " ip nat inside",
+    " ip routing",
+    "end",
+])
+configurep(["ip route 0.0.0.0 0.0.0.0 10.1.1.3", "end"])
+configurep([
+    "app-hosting appid guestshell",
+    " app-vnic AppGigabitEthernet trunk",
+    "  vlan 4094 guest-interface 0",
+    "   guest-ipaddress 192.168.2.2 netmask 255.255.255.0",
+    "  exit",
+    " app-default-gateway 192.168.2.1 guest-interface 0",
+    " name-server0 10.1.1.3",
+    " app-resource profile custom",
+    "  cpu-percent 100",
+    "  memory 7000",
+    "  persist-disk 65535",
+    "end",
+])
+for app_iface in ("AppGigabitEthernet1/0/1", "AppGigabitEthernet1/0/2"):
+    try:
+        configurep([f"interface {app_iface}", " switchport mode trunk", "end"])
+    except Exception as e:
+        print(f"DEBUG: {app_iface} not present: {e}")
+
 print("*** Saving configuration ***")
 executep("write memory")
 
-# Light the blue beacon to signal SZTP completion (C9300X / C9500X).
+# Light the blue beacon to signal SZTP completion (C9300X / C9500X / C9350).
 print("*** Enabling blue beacon (best-effort) ***")
 executep("hw-module beacon slot active on")
 
