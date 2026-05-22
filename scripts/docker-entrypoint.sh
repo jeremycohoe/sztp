@@ -499,6 +499,102 @@ def _install_cms_wrapper_patch():
             print(f"sitecustomize: chassis-SN capture hook failed: {e}",
                   file=sys.stderr)
 
+        # ------------------------------------------------------------------
+        # mTLS peercert normalization.
+        #
+        # sztpd.rfc8572.get-bootstrapping-data picks the device-lookup key
+        # from the SSL transport's peercert dict with:
+        #     N['subject'][-1][0][1]
+        # i.e. the value of the *last* RDN in the cert's Subject.
+        #
+        # That breaks on multi-RDN SUDI certs introduced on C9350 / Q200:
+        #     CN=Q5CG-6PWR-DK2T, OU=ACT-2 Lite SUDI, O=Cisco,
+        #     serialNumber=PID:C9350-48P SN:FVH2943LJ0E
+        # CN sorts last, so the lookup key becomes the Cloud ID ("Q5CG-...").
+        # We never want to register devices by Cloud ID.
+        #
+        # We wrap ssl.SSLObject.getpeercert (and SSLSocket.getpeercert) so
+        # that every peercert dict has its `subject` rewritten to a single
+        # synthetic RDN whose value is the PID extracted from the
+        # `serialNumber` RDN (OID 2.5.4.5, value "PID:<PID> SN:<SN>").
+        # We also stash the chassis SN into the per-request contextvar so
+        # the per-chassis voucher picker fires on the mTLS path too — the
+        # existing get_attributes_for_oid hook does not get called by
+        # sztpd's mTLS code path (it reads peercert straight from ssl).
+        # ------------------------------------------------------------------
+        try:
+            import ssl as _ssl
+            import re as _re_mtls
+
+            _PID_SN_RE = _re_mtls.compile(
+                r"PID\s*:\s*(?P<pid>\S+)\s+SN\s*:\s*(?P<sn>\S+)")
+
+            def _normalize_peercert(cert):
+                """Rewrite peercert['subject'] so the last RDN is the PID.
+
+                Also captures the chassis SN into _current_chassis_sn so
+                the per-chassis voucher picker fires.
+                Returns the (possibly modified) cert dict.
+                """
+                if not isinstance(cert, dict):
+                    return cert
+                subj = cert.get("subject")
+                if not subj:
+                    return cert
+                # Find the serialNumber RDN — its value matches "PID:.. SN:..".
+                pid = None
+                chassis_sn = None
+                for rdn in subj:
+                    # rdn is a tuple of (attr_name, value) pairs
+                    for attr_name, value in rdn:
+                        if attr_name == "serialNumber" and isinstance(value, str):
+                            m = _PID_SN_RE.search(value)
+                            if m:
+                                pid = m.group("pid")
+                                chassis_sn = m.group("sn")
+                                break
+                    if pid is not None:
+                        break
+                if pid is None:
+                    # Subject has no PID:..SN:.. token — leave cert as-is.
+                    return cert
+                if chassis_sn is not None:
+                    try:
+                        _current_chassis_sn.set(chassis_sn)
+                    except Exception:
+                        pass
+                # Rewrite subject: keep all original RDNs, but APPEND a
+                # synthetic serialNumber RDN holding only the PID so that
+                # sztpd's `subject[-1][0][1]` lookup yields the PID.
+                synthetic = ((("serialNumber", pid),),)
+                cert = dict(cert)
+                cert["subject"] = tuple(subj) + synthetic
+                return cert
+
+            _orig_sslobj_getpeercert = _ssl.SSLObject.getpeercert
+            _orig_sslsock_getpeercert = _ssl.SSLSocket.getpeercert
+
+            def _hooked_sslobj_getpeercert(self, binary_form=False):
+                cert = _orig_sslobj_getpeercert(self, binary_form)
+                if binary_form:
+                    return cert
+                return _normalize_peercert(cert)
+
+            def _hooked_sslsock_getpeercert(self, binary_form=False):
+                cert = _orig_sslsock_getpeercert(self, binary_form)
+                if binary_form:
+                    return cert
+                return _normalize_peercert(cert)
+
+            _ssl.SSLObject.getpeercert = _hooked_sslobj_getpeercert
+            _ssl.SSLSocket.getpeercert = _hooked_sslsock_getpeercert
+            print("sitecustomize: ssl.getpeercert hooked to normalize "
+                  "peercert.subject to PID (drop Cloud ID); chassis SN "
+                  "captured on mTLS path", file=sys.stderr)
+        except Exception as e:
+            print(f"sitecustomize: peercert normalization hook failed: {e}",
+                  file=sys.stderr)
+
         _voucher_dir = os.environ.get("SZTP_VOUCHER_DIR", "/local_files")
         _voucher_cache = {}  # chassis_sn -> base64 string, populated lazily
 
