@@ -102,6 +102,39 @@ PODS = {
     "FCW2129G03G": ("cat9300-pod28b", 48, 55),
     "FCW2129G0PZ": ("cat9300-pod29b", 49, 55),
     "FCW2129L05N": ("cat9300-pod30b", 50, 55),
+
+    # ---- C9350 "c" devices (FVH*) --------------------------------------
+    # Mgmt last-octet = .15 (a=.5 / c=.15 / b=.55)
+    "FVH2943LHRX": ("cat9350-pod01c", 21, 15),
+    "FVH2943LJQX": ("cat9350-pod02c", 22, 15),
+    "FVH2944LC8A": ("cat9350-pod03c", 23, 15),
+    "FVH2943LHUA": ("cat9350-pod04c", 24, 15),
+    "FVH2943LJKM": ("cat9350-pod05c", 25, 15),
+    "FVH2943LJWE": ("cat9350-pod06c", 26, 15),
+    "FVH2944LDKS": ("cat9350-pod07c", 27, 15),
+    "FVH2944LCXF": ("cat9350-pod08c", 28, 15),
+    "FVH2943LHSM": ("cat9350-pod09c", 29, 15),
+    "FVH2943LJ3Z": ("cat9350-pod10c", 30, 15),
+    "FVH2943LJ0E": ("cat9350-pod11c", 31, 15),
+    "FVH2943LJNK": ("cat9350-pod12c", 32, 15),
+    "FVH2944L1ZY": ("cat9350-pod13c", 33, 15),
+    "FVH2943LHSV": ("cat9350-pod14c", 34, 15),
+    "FVH2943LJFE": ("cat9350-pod15c", 35, 15),
+    "FVH2944LEXF": ("cat9350-pod16c", 36, 15),
+    "FVH2943LK9C": ("cat9350-pod17c", 37, 15),
+    "FVH2943LJN5": ("cat9350-pod18c", 38, 15),
+    "FVH2943LHME": ("cat9350-pod19c", 39, 15),
+    "FVH2944LEXA": ("cat9350-pod20c", 40, 15),
+    "FVH2943LHMV": ("cat9350-pod21c", 41, 15),
+    "FVH2944L20P": ("cat9350-pod22c", 42, 15),
+    "FVH2944LDFS": ("cat9350-pod23c", 43, 15),
+    "FVH2944LDFR": ("cat9350-pod24c", 44, 15),
+    "FVH2944LDBP": ("cat9350-pod25c", 45, 15),
+    "FVH2943LHZZ": ("cat9350-pod26c", 46, 15),
+    "FVH2944L20B": ("cat9350-pod27c", 47, 15),
+    "FVH2943LJHN": ("cat9350-pod28c", 48, 15),  # was UNKNOWN — only remaining staged FVH
+    "FVH2943LJUZ": ("cat9350-pod29c", 49, 15),
+    "FVH2944L204": ("cat9350-pod30c", 50, 15),
 }
 
 

@@ -135,3 +135,29 @@ should be `Up` and the first two should be `(healthy)`.
 - **Multi-line shell in `docker-compose.yml` `command:`** — YAML escaping is
   fragile. The render logic lives in `dhcp/entrypoint.sh` instead; compose
   just runs `["sh", "/opt/entrypoint.sh"]`.
+
+## Per-pod addressing scheme
+
+`config/first-post-configuration-script.sh` carries a `PODS` dict keyed by
+chassis serial number. Every chassis gets the same signed sZTP response
+(`first-onboarding-information`), and the embedded post-script differentiates
+on the device itself via this table.
+
+The lab uses three sibling switches per pod, each on the pod's mgmt VLAN
+(`vlan = 20 + pod_number`) with a family-specific last octet so they never
+collide:
+
+| Family | Prefix | Hostname pattern | Mgmt last-octet |
+| ------ | ------ | ---------------- | --------------- |
+| C9300X (`a`) | `FOC*` | `cat9300x-pod<NN>a` | `.5`  |
+| C9350 (`c`)  | `FVH*` | `cat9350-pod<NN>c`  | `.15` |
+| C9300 (`b`)  | `FCW*` | `cat9300-pod<NN>b`  | `.55` |
+
+A chassis whose SN is not in `PODS` falls back to hostname
+`sztp-unprovisioned-<sn>` (logged) and skips the per-pod VLAN/IP block — the
+device is still safely onboarded with base config, AAA, NETCONF, etc.
+
+To add new pods: edit `PODS`, re-run `docker compose --profile iosxe up -d
+--force-recreate bootstrap redirecter` so the updated script is re-embedded
+in the CMS response.
+

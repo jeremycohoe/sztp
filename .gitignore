@@ -40,3 +40,8 @@ temp/
 
 # Generated PR description.
 PR_BODY.md
+
+# Lab-local overrides and working artifacts (never commit)
+docker-compose.override.yml
+**/__pycache__/
+local_files/_repo_default_backup/
