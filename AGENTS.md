@@ -149,9 +149,9 @@ collide:
 
 | Family | Prefix | Hostname pattern | Mgmt last-octet |
 | ------ | ------ | ---------------- | --------------- |
-| C9300X (`a`) | `FOC*` | `cat9300x-pod<NN>a` | `.5`  |
-| C9350 (`c`)  | `FVH*` | `cat9350-pod<NN>c`  | `.15` |
-| C9300 (`b`)  | `FCW*` | `cat9300-pod<NN>b`  | `.55` |
+| C9300X (`a`) | `FOC*` | `c9300x-pod<NN>a-sztp` | `.5`  |
+| C9350 (`c`)  | `FVH*` | `c9350-pod<NN>c-sztp`  | `.15` |
+| C9300 (`b`)  | `FCW*` | `c9300-pod<NN>b-sztp`  | `.55` |
 
 A chassis whose SN is not in `PODS` falls back to hostname
 `sztp-unprovisioned-<sn>` (logged) and skips the per-pod VLAN/IP block — the
