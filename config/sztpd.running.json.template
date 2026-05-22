@@ -1309,6 +1309,24 @@
             }
           ]
         }
+      },
+      {
+        "serial-number": "C9350-48P",
+        "device-type": "cisco-hasudi-device-type",
+        "response-manager": {
+          "matched-response": [
+            {
+              "name": "catch-all-response",
+              "response": {
+                "conveyed-information": {
+                  "onboarding-information": {
+                    "reference": "first-onboarding-information"
+                  }
+                }
+              }
+            }
+          ]
+        }
       }
     ]
   },

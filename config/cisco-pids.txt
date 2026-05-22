@@ -113,3 +113,10 @@ C9410R,act2
 C9600-SUP-1,act2
 C9600X-SUP-2,hasudi
 C9606R,act2
+
+# -----------------------------------------------------------------------------
+# Catalyst 9350 (Q200, HA-SUDI / SHA-256).  New SUDI Subject carries a CN
+# (Cloud ID) plus serialNumber=PID:<x> SN:<y>; sitecustomize rewrites the
+# peercert so device-lookup keys on PID.
+# -----------------------------------------------------------------------------
+C9350-48P,hasudi
