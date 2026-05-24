@@ -45,3 +45,6 @@ PR_BODY.md
 docker-compose.override.yml
 **/__pycache__/
 local_files/_repo_default_backup/
+
+# Local backup snapshots created by editing tooling (never commit)
+config/*.bak-*
